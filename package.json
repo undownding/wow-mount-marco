@@ -15,5 +15,6 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
     "vite": "^5.4.10"
-  }
+  },
+  "packageManager": "yarn@4.5.1"
 }
