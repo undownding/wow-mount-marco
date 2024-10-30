@@ -98,7 +98,6 @@ export default {
         },
         flyable: {
           0: '（未设定）',
-          false: '飞行不可用',
           true: '飞行可用',
         }
       },
@@ -132,7 +131,7 @@ export default {
        const conditions = row.conditions.map(condition => {
          const mod = condition.mod === 0 ? "" : `mod:${condition.mod}`;
          const swimming = condition.swimming === 0 ? "" : `swimming`;
-         const flyable = condition.flyable === 0 ? "" : `flyable:${condition.flyable}`;
+         const flyable = condition.flyable === 0 ? "" : `flyable`;
          const btn = condition.btn === 0 ? "" : `button:${condition.btn}`;
          const allConditions = [mod, swimming, flyable, btn].filter(v => v !== "").join(",");
          return `${allConditions ? "[" + allConditions +"] " : ""}${condition.mount.name}`;
