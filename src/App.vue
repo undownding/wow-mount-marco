@@ -1,6 +1,8 @@
 <template>
   <div class="macro-editor">
     <h2>坐骑宏生成器</h2>
+    <input type="checkbox" value="false" v-model="palMode">
+    <label>大领主模式</label>
     <div v-for="(row, rowIndex) in rows" :key="rowIndex" class="macro-row">
       <h3>行 {{ rowIndex + 1 }}</h3>
       <div v-for="(condition, condIndex) in row.conditions" :key="condIndex" class="macro-condition">
@@ -40,12 +42,12 @@
         <div class="condition-field">
           <label>坐骑: </label>
           <Multiselect class="search-field"
-              v-model="condition.mount"
-              :options="mountOptions"
-              :options-limit="5"
-              label="name"
-              track-by="name"
-              placeholder="选择或搜索坐骑"
+                       v-model="condition.mount"
+                       :options="mountOptions"
+                       :options-limit="5"
+                       label="name"
+                       track-by="name"
+                       placeholder="选择或搜索坐骑"
           />
         </div>
       </div>
@@ -76,6 +78,7 @@ export default {
     return {
       showModal: false,
       generatedMacro: '',
+      palMode: false,
       rows: [
         {conditions: [{btn: 0, mod: 0, swimming: 0, flyable: 0, mount: '',}]}
       ],
@@ -102,55 +105,59 @@ export default {
         }
       },
       mountOptions: []
-    };
+    }
   },
   created() {
-    this.loadMounts();
+    this.loadMounts()
   },
   methods: {
     async loadMounts() {
       try {
-        const response = await fetch("/mounts.json");
-        this.mountOptions = await response.json();
+        const response = await fetch("/mounts.json")
+        this.mountOptions = await response.json()
       } catch (error) {
-        console.error("加载坐骑数据失败:", error);
+        console.error("加载坐骑数据失败:", error)
       }
     },
     addRow() {
-      this.rows.push({conditions: []});
+      this.rows.push({conditions: []})
     },
     addCondition(rowIndex) {
-      this.rows[rowIndex].conditions.push({btn: 0, mod: 0, swimming:0, flyable: 0, mount: ''});
+      this.rows[rowIndex].conditions.push({btn: 0, mod: 0, swimming: 0, flyable: 0, mount: ''})
     },
     generateMacro() {
-     const marco = [
-         "#showtooltip",
-         "/dismount [mounted]"
-         ]
-     for (const row of this.rows) {
-       const conditions = row.conditions.map(condition => {
-         const mod = condition.mod === 0 ? "" : `mod:${condition.mod}`;
-         const swimming = condition.swimming === 0 ? "" : `swimming`;
-         const flyable = condition.flyable === 0 ? "" : `flyable`;
-         const btn = condition.btn === 0 ? "" : `button:${condition.btn}`;
-         const allConditions = [mod, swimming, flyable, btn].filter(v => v !== "").join(",");
-         return `${allConditions ? "[" + allConditions +"] " : ""}${condition.mount.name}`;
-       });
-       marco.push(`/cast ${conditions.join(";")}`);
-     }
+      const marco = ["#showtooltip",]
+      if (this.palMode) {
+        marco.push("/cast [nomounted,known:十字军光环]十字军光环;[mounted,known:虔诚光环]虔诚光环")
+      }
+      marco.push("/dismount [mounted]")
+      for (const row of this.rows) {
+        const conditions = row.conditions.filter(c => c.mount.name?.length).map(condition => {
+          console.log(condition.mount.name?.length)
+          const mod = condition.mod === 0 ? "" : `mod:${condition.mod}`
+          const swimming = condition.swimming === 0 ? "" : `swimming`
+          const flyable = condition.flyable === 0 ? "" : `flyable`
+          const btn = condition.btn === 0 ? "" : `button:${condition.btn}`
+          const allConditions = [mod, swimming, flyable, btn].filter(v => v !== "").join(",")
+          return `${allConditions ? "[" + allConditions + "] " : ""}${condition.mount.name}`
+        })
+        if (conditions.length > 0) {
+          marco.push(`/cast ${conditions.join(";")}`)
+        }
+      }
       this.generatedMacro = marco.join("\n")// 替换为生成的宏内容
-      this.showModal = true;
+      this.showModal = true
     },
     closeModal() {
-      this.showModal = false;
+      this.showModal = false
     },
     copyMacro() {
       navigator.clipboard.writeText(this.generatedMacro).then(() => {
-        alert('宏已复制到剪贴板');
-      });
+        alert('宏已复制到剪贴板')
+      })
     }
   }
-};
+}
 </script>
 
 <style scoped>
@@ -195,6 +202,7 @@ export default {
   margin-left: 20px;
   cursor: pointer;
 }
+
 .modal-overlay {
   position: fixed;
   top: 0;
