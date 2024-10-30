@@ -154,7 +154,7 @@ export default {
       )
       console.log(this.buffName.name)
       if (this.buffMode && this.buffName.name?.length) {
-        marco.push(`/cast [nomounted,known:${this.buffName.name}]${this.buffName.name}`)
+        marco.push(`/cast [mounted,known:${this.buffName.name}]${this.buffName.name}`)
       } else {
         marco.push("/dismount [mounted]")
       }
