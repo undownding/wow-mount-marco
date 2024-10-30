@@ -242,7 +242,7 @@ export default {
 }
 
 .modal-content {
-  background: #777;
+  background: white;
   padding: 20px;
   border-radius: 8px;
   width: 300px;
