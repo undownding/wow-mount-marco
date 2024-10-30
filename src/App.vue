@@ -3,6 +3,20 @@
     <h2>坐骑宏生成器</h2>
     <input type="checkbox" value="false" v-model="palMode">
     <label>大领主模式</label>
+    <div style="justify-content: space-between; display: flex">
+      <div>
+        <input type="checkbox" value="false" v-model="buffMode">
+        <label>使用以下技能代替下马</label>
+      </div>
+      <Multiselect class="search-field"
+                   v-model="buffName"
+                   :options="buffOptions"
+                   :disabled="!buffMode"
+                   label="name"
+                   track-by="name"
+                   placeholder="选择技能"
+      />
+    </div>
     <div v-for="(row, rowIndex) in rows" :key="rowIndex" class="macro-row">
       <h3>行 {{ rowIndex + 1 }}</h3>
       <div v-for="(condition, condIndex) in row.conditions" :key="condIndex" class="macro-condition">
@@ -69,6 +83,7 @@
 <script>
 
 import Multiselect from "vue-multiselect"
+import "vue-multiselect/dist/vue-multiselect.min.css"
 
 export default {
   components: {
@@ -79,6 +94,8 @@ export default {
       showModal: false,
       generatedMacro: '',
       palMode: false,
+      buffMode: false,
+      buffName: '',
       rows: [
         {conditions: [{btn: 0, mod: 0, swimming: 0, flyable: 0, mount: '',}]}
       ],
@@ -104,17 +121,19 @@ export default {
           true: '飞行可用',
         }
       },
-      mountOptions: []
+      mountOptions: [],
+      buffOptions: []
     }
   },
   created() {
-    this.loadMounts()
+    this.loadData()
   },
   methods: {
-    async loadMounts() {
+    async loadData() {
       try {
-        const response = await fetch("/mounts.json")
-        this.mountOptions = await response.json()
+        const [mountResp, buffResp] = await Promise.all([fetch("/mounts.json"), fetch("/buffs.json")])
+        this.buffOptions = await buffResp.json()
+        this.mountOptions = await mountResp.json()
       } catch (error) {
         console.error("加载坐骑数据失败:", error)
       }
@@ -130,7 +149,15 @@ export default {
       if (this.palMode) {
         marco.push("/cast [nomounted,known:十字军光环]十字军光环;[mounted,known:虔诚光环]虔诚光环")
       }
-      marco.push("/dismount [mounted]")
+      console.log(
+          this.buffMode
+      )
+      console.log(this.buffName.name)
+      if (this.buffMode && this.buffName.name?.length) {
+        marco.push(`/cast [nomounted,known:${this.buffName.name}]${this.buffName.name}`)
+      } else {
+        marco.push("/dismount [mounted]")
+      }
       for (const row of this.rows) {
         const conditions = row.conditions.filter(c => c.mount.name?.length).map(condition => {
           console.log(condition.mount.name?.length)
@@ -183,8 +210,7 @@ export default {
 }
 
 .search-field {
-  width: 200px;
-  height: 100px;
+  width: 300px;
 }
 
 .add-condition-btn {
