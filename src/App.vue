@@ -147,7 +147,7 @@ export default {
     generateMacro() {
       const marco = ["#showtooltip",]
       if (this.palMode) {
-        marco.push("/cast [nomounted,known:十字军光环]十字军光环;[mounted,known:虔诚光环]虔诚光环")
+        marco.push("/cast [noindoors,nomounted,known:十字军光环]!十字军光环;[mounted,known:虔诚光环]!虔诚光环")
       }
       console.log(
           this.buffMode
